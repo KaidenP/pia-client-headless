@@ -314,7 +314,7 @@ monitor() {
 
     if [ -n "$PIA_POST_CONNECT_SCRIPT" ]; then
         echo -e "${green}Running the PIA_POST_CONNECT_SCRIPT...${nc}"
-        "$PIA_POST_CONNECT_SCRIPT"
+        "$PIA_POST_CONNECT_SCRIPT" $port
     fi
 
     while true; do
