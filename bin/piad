@@ -25,7 +25,7 @@ case "$1" in
     systemctl start piad-killswitch.service
     systemctl start piad.service
     ;;
-  *)
+  *|"")
     echo "Usage: $0 {start|killswitch|install}"
     exit 1
     ;;
