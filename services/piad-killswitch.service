@@ -1,0 +1,11 @@
+[Unit]
+Description=PIA VPN killswitch
+After=network-online.target
+
+[Service]
+Type=oneshot
+ExecStart=/opt/pia-client-headless/bin/piad killswitch
+RemainAfterExit=true
+
+[Install]
+WantedBy=multi-user.target

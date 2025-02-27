@@ -1,0 +1,12 @@
+[Unit]
+Description=PIA VPN
+Wants=piad-killswitch.service
+After=piad-killswitch.service network-online.target nss-lookup.target
+
+[Service]
+Type=exec
+ExecStart=/opt/pia-client-headless/bin/piad start
+Restart=always
+
+[Install]
+WantedBy=multi-user.target

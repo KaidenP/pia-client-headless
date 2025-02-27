@@ -1,0 +1,32 @@
+#!/bin/bash
+
+cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && cd .. &> /dev/null || \
+    echo "Failed to change directory to the script directory." && exit 1
+
+source lib/util.sh
+
+case "$1" in
+  start)
+    echo -e "Starting PIA VPN..."
+    connect
+    monitor
+    ;;
+  killswitch)
+    echo -e "Enabling PIA VPN killswitch..."
+    reset_killswitch
+    ;;
+  install)
+    echo -e "Installing PIA VPN..."
+    chmod +x bin/piad
+    cp services/* /etc/systemd/system/
+    systemctl daemon-reload
+    systemctl enable piad.service
+    systemctl enable piad-killswitch.service
+    systemctl start piad-killswitch.service
+    systemctl start piad.service
+    ;;
+  *)
+    echo "Usage: $0 {start|killswitch|install}"
+    exit 1
+    ;;
+esac
