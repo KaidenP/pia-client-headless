@@ -116,7 +116,7 @@ getDIP() {
         'https://www.privateinternetaccess.com/api/client/v2/dedicated_ip' \
         --header 'Content-Type: application/json' \
         --header "Authorization: Token $PIA_TOKEN" \
-        --data-raw '{"tokens":["'"$DIP_TOKEN"'"]}'
+        --data-raw '{"tokens":["'"$PIA_DIP"'"]}'
     )
     if [ "$(echo "$generateDIPResponse" | jq -r '.[0].status')" != "active" ]; then
         echo -e "${red}Could not validate the dedicated IP token provided!${nc}"
@@ -184,7 +184,7 @@ get_selected_region_data() {
 }
 
 selectServer() {
-    if [[ -z $DIP_TOKEN ]]; then
+    if [[ -z $PIA_DIP ]]; then
         MAX_LATENCY=${MAX_LATENCY:-0.1}
         export MAX_LATENCY
 
@@ -232,7 +232,7 @@ connect() {
     reset_killswitch
     getToken
 
-    if [[ -n $DIP_TOKEN ]]; then
+    if [[ -n $PIA_DIP ]]; then
         getDIP
     else
         selectServer
@@ -248,7 +248,7 @@ connect() {
     iptables_whitelist_IP "${PIA_WG_IP}"
 
     echo "Trying to connect to the PIA WireGuard API on $PIA_WG_IP..."
-    if [[ -z $DIP_TOKEN ]]; then
+    if [[ -z $PIA_DIP ]]; then
         wireguard_json="$(curl -s -G \
             --connect-to "$PIA_WG_HOST::$PIA_WG_IP:" \
             --cacert "ca.rsa.4096.crt" \
@@ -259,7 +259,7 @@ connect() {
         wireguard_json="$(curl -s -G \
             --connect-to "$PIA_WG_HOST::$PIA_WG_IP:" \
             --cacert "ca.rsa.4096.crt" \
-            --user "dedicated_ip_$DIP_TOKEN:$PIA_WG_IP" \
+            --user "dedicated_ip_$PIA_DIP:$PIA_WG_IP" \
             --data-urlencode "pubkey=$pubKey" \
             "https://$PIA_WG_HOST:1337/addKey" )"
     fi
