@@ -52,6 +52,7 @@ reset_killswitch() {
 
     # Allow local connections
     iptables -A INPUT -i eth0 -s 10.0.0.0/16 -j ACCEPT
+    iptables -A OUTPUT -o eth0 -d 10.0.0.0/16 -j ACCEPT
     
     # Allow all loopback traffic
     iptables -A INPUT -i lo -j ACCEPT
