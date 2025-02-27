@@ -284,7 +284,7 @@ PrivateKey = $privKey
 [Peer]
 PersistentKeepalive = 25
 PublicKey = $(echo "$wireguard_json" | jq -r '.server_key')
-AllowedIPs = 0.0.0.0/5, 8.0.0.0/7, 11.0.0.0/8, 12.0.0.0/6, 16.0.0.0/4, 32.0.0.0/3, 64.0.0.0/2, 128.0.0.0/3, 160.0.0.0/5, 168.0.0.0/6, 172.0.0.0/12, 172.32.0.0/11, 172.64.0.0/10, 172.128.0.0/9, 173.0.0.0/8, 174.0.0.0/7, 176.0.0.0/4, 192.0.0.0/9, 192.128.0.0/11, 192.160.0.0/13, 192.169.0.0/16, 192.170.0.0/15, 192.172.0.0/14, 192.176.0.0/12, 192.192.0.0/10, 193.0.0.0/8, 194.0.0.0/7, 196.0.0.0/6, 200.0.0.0/5, 208.0.0.0/4, 224.0.0.0/3
+AllowedIPs = 0.0.0.0/0
 Endpoint = ${PIA_WG_IP}:$(echo "$wireguard_json" | jq -r '.server_port')
 EOF
     trap disconnect SIGINT SIGTERM
@@ -303,7 +303,7 @@ monitor() {
         "https://${PIA_WG_HOST}:19999/getSignature")"
     if [[ $(echo "$payload_and_signature" | jq -r '.status') != "OK" ]]; then
         echo -e "${red}The payload_and_signature variable does not contain an OK status.${nc}"
-        systemctl restart piad
+        disconnect
         exit 1
     fi
     signature=$(echo "$payload_and_signature" | jq -r '.signature')
@@ -323,7 +323,6 @@ monitor() {
             --data-urlencode "payload=${payload}" \
             --data-urlencode "signature=${signature}" \
             "https://${PIA_WG_HOST}:19999/bindPort")"
-        echo -e "${green}OK!${nc}"
 
         # If port did not bind, just exit the script.
         # This script will exit in 2 months, since the port will expire.
@@ -333,6 +332,14 @@ monitor() {
             disconnect
             exit 1
         fi
-
+        for i in $(seq 1 15); do
+            if ping -c 4 8.8.8.8 > /dev/null; then
+                sleep 60
+            else
+                echo -e "${red}No internet connection detected. Disconnecting.${nc}"
+                disconnect
+                exit 1
+            fi
+        done
     done
 }
