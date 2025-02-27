@@ -77,6 +77,10 @@ reset_killswitch() {
     ip6tables -P OUTPUT DROP
 }
 
+get_ip() {
+    dig +short "$1" | head -n 1
+}
+
 iptables_whitelist_IP() {
     if iptables-save | grep piawhitelist | grep 142.251.33.163; then
         echo -e "${green}IP $1 is already whitelisted.${nc}"
@@ -88,15 +92,12 @@ iptables_whitelist_IP() {
     fi
 }
 
-iptables_whitelist_domain() {
-    echo -e "${green}Whitelisting domain $1...${nc}"
-    iptables_whitelist_IP $(dig +short $1 | head -n 1)
-}
-
 getToken() {
   echo -e "${green}Getting auth token...${nc}"
-  iptables_whitelist_domain www.privateinternetaccess.com
+  ip=$(get_ip www.privateinternetaccess.com)
+  iptables_whitelist_IP $ip
   generateTokenResponse=$(curl -s --location --request POST \
+    --connect-to "www.privateinternetaccess.com::$ip:" \
     'https://www.privateinternetaccess.com/api/client/v2/token' \
     --form "username=$PIA_USER" \
     --form "password=$PIA_PASS" )
@@ -111,8 +112,10 @@ getToken() {
 }
 
 getDIP() {
-    iptables_whitelist_domain www.privateinternetaccess.com
+    ip=$(get_ip www.privateinternetaccess.com)
+    iptables_whitelist_IP $ip
     generateDIPResponse=$(curl -s --location --request POST \
+        --connect-to "www.privateinternetaccess.com::$ip:" \
         'https://www.privateinternetaccess.com/api/client/v2/dedicated_ip' \
         --header 'Content-Type: application/json' \
         --header "Authorization: Token $PIA_TOKEN" \
@@ -188,8 +191,9 @@ selectServer() {
         MAX_LATENCY=${MAX_LATENCY:-0.1}
         export MAX_LATENCY
 
-        iptables_whitelist_domain serverlist.piaservers.net
-        all_region_data=$(curl -s "https://serverlist.piaservers.net/vpninfo/servers/v6" | head -1)
+        ip=$(get_ip serverlist.piaservers.net)
+        iptables_whitelist_IP $ip
+        all_region_data=$(curl --connect-to "serverlist.piaservers.net::$ip:" -s "https://serverlist.piaservers.net/vpninfo/servers/v6" | head -1)
 
         # summarized_region_data="$( echo "$all_region_data" |
         #     jq -r '.regions[] |
@@ -244,7 +248,7 @@ connect() {
     pubKey=$( echo "$privKey" | wg pubkey)
     export pubKey
 
-    iptables_whitelist_domain "${PIA_WG_HOST}"
+    #iptables_whitelist_domain "${PIA_WG_HOST}"
     iptables_whitelist_IP "${PIA_WG_IP}"
 
     echo "Trying to connect to the PIA WireGuard API on $PIA_WG_IP..."
