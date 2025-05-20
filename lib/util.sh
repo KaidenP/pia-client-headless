@@ -180,11 +180,11 @@ printServerLatency() {
         >&2 echo "Got latency ${time}s for region: $regionName"
         echo "$time $regionID $serverIP"
         # Write a list of servers with acceptable latency
-        # to /opt/piavpn-manual/latencyList
-        echo -e "$time" "$regionID"'\t'"$serverIP"'\t'"$regionName" >> /opt/piavpn-manual/latencyList
+        # to /opt/pia-client-headless/latencyList
+        echo -e "$time" "$regionID"'\t'"$serverIP"'\t'"$regionName" >> /opt/pia-client-headless/latencyList
     fi
     # Sort the latencyList, ordered by latency
-    sort -no /opt/piavpn-manual/latencyList /opt/piavpn-manual/latencyList
+    sort -no /opt/pia-client-headless/latencyList /opt/pia-client-headless/latencyList
 }
 export -f printServerLatency
 
@@ -216,6 +216,7 @@ selectServer() {
             .servers.meta[0].ip+" "+.id+" "+.name+" "+(.geo|tostring)' )" # Only select regions that support port forwarding
 
         echo -e "Testing regions that respond faster than "${green}$MAX_LATENCY${nc}" seconds:"
+        rm /opt/pia-client-headless/latencyList
         selectedRegion="$(echo "$summarized_region_data" |
             xargs -I{} bash -c 'printServerLatency {}' |
             sort | head -1 | awk '{ print $2 }')"
