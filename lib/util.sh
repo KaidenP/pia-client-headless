@@ -224,8 +224,8 @@ selectServer() {
             echo -e "${red}No region responded within ${MAX_LATENCY}s, consider using a higher timeout."
             exit 1
         fi
-
         get_selected_region_data
+        echo "${green}Selected Server: $(echo "$regionData" | jq '.name' -r)${nc}"
 
         bestServer_meta_IP=$(echo "$regionData" | jq -r '.servers.meta[0].ip')
         bestServer_meta_hostname=$(echo "$regionData" | jq -r '.servers.meta[0].cn')
