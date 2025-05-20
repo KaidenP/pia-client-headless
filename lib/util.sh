@@ -102,6 +102,7 @@ iptables_whitelist_IP() {
         iptables -A piawhitelist -d $1 -j ACCEPT
     fi
 }
+export -f iptables_whitelist_IP
 
 getToken() {
   echo -e "${green}Getting auth token...${nc}"
@@ -164,7 +165,6 @@ disableIPv6() {
 }
 
 printServerLatency() {
-    echo "'$0'"
     serverIP=$1
     regionID=$2
     regionName="$(echo "${@:3}" |
