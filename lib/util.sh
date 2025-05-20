@@ -33,6 +33,16 @@ if [[ -z $PIA_USER ]] || [[ -z $PIA_PASS ]]; then
     exit 1
 fi
 
+disable_killswitch() {
+  iptables -F
+  iptables -t nat -F
+  iptables -t mangle -F
+  iptables -X
+  iptables -P INPUT ACCEPT
+  iptables -P FORWARD DROP
+  iptables -P OUTPUT ACCEPT
+}
+
 reset_killswitch() {
     echo -e "${green}Resetting the killswitch...${nc}"
     rm /etc/resolv.conf
