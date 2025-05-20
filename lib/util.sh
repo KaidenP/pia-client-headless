@@ -227,10 +227,14 @@ selectServer() {
         get_selected_region_data
         echo "${green}Selected Server: $(echo "$regionData" | jq '.name' -r)${nc}"
 
+        reset_killswitch
+
         bestServer_meta_IP=$(echo "$regionData" | jq -r '.servers.meta[0].ip')
         bestServer_meta_hostname=$(echo "$regionData" | jq -r '.servers.meta[0].cn')
         PIA_WG_IP=$(echo "$regionData" | jq -r '.servers.wg[0].ip')
         PIA_WG_HOST=$(echo "$regionData" | jq -r '.servers.wg[0].cn')
+        iptables_whitelist_IP "$PIA_WG_IP"
+        iptables_whitelist_IP "$bestServer_meta_IP"
     fi
 }
 
