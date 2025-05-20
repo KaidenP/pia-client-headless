@@ -83,7 +83,7 @@ get_ip() {
 }
 
 iptables_whitelist_IP() {
-    if iptables-save | grep piawhitelist | grep 142.251.33.163; then
+    if iptables-save | grep piawhitelist | grep $1; then
         echo -e "${green}IP $1 is already whitelisted.${nc}"
         return
     else
@@ -154,6 +154,7 @@ disableIPv6() {
 }
 
 printServerLatency() {
+    echo "'$0'"
     serverIP=$1
     regionID=$2
     regionName="$(echo "${@:3}" |
